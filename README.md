@@ -1,4 +1,4 @@
-# TownOS
+<img width="248" height="2268" alt="image" src="https://github.com/user-attachments/assets/452ed941-00fb-4a97-9ab1-7447a77ae59b" /># TownOS
 
 > **One Tap. A Safer Everyday.**
 >
@@ -72,6 +72,7 @@ src/
 ## 🚀 Getting Started
 
 ```bash
+cd $HOME
 git clone https://github.com/GeokLiu/TownOS-v2.git
 cd TownOS-v2
 npm install
