@@ -1,0 +1,8 @@
+{
+  "name": "TownOS",
+  "description": "TownOS smart township family safety and passive battery-free NFC tag management for City of Elmina residents.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
