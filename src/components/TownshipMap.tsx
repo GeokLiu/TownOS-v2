@@ -5,11 +5,17 @@ import { useI18n } from '../i18n/I18nContext';
 
 interface TownshipMapProps {
   onSelectPerson?: (person: 'grandpa' | 'sarah') => void;
+  crosswalkUser?: 'grandpa' | 'sarah';
 }
 
-export const TownshipMap: React.FC<TownshipMapProps> = ({ onSelectPerson }) => {
+export const TownshipMap: React.FC<TownshipMapProps> = ({
+  onSelectPerson,
+  crosswalkUser = 'grandpa',
+}) => {
   const [selectedPin, setSelectedPin] = useState<'grandpa' | 'sarah' | null>(null);
   const { t } = useI18n();
+
+  const isSarahOnCrosswalk = crosswalkUser === 'sarah';
 
   return (
     <div className="w-full bg-white rounded-3xl p-3.5 border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
@@ -168,30 +174,50 @@ export const TownshipMap: React.FC<TownshipMapProps> = ({ onSelectPerson }) => {
           </span>
         </div>
 
-        {/* Sarah Tan Pin Marker */}
-        <div
-          onClick={() => {
-            setSelectedPin(selectedPin === 'sarah' ? null : 'sarah');
-            onSelectPerson?.('sarah');
-          }}
-          className="absolute right-9 top-8 flex flex-col items-center cursor-pointer group"
-        >
-          <div className="w-8 h-8 rounded-full border-2 border-amber-500 overflow-hidden shadow-md bg-white">
-            <img src={AVATARS.sarah} alt="Sarah Tan" className="w-full h-full object-cover" />
+        {/* Pin in School Zone:
+            If Sarah is on crosswalk, show Grandpa in park/zone; otherwise show Sarah here */}
+        {!isSarahOnCrosswalk ? (
+          <div
+            onClick={() => {
+              setSelectedPin(selectedPin === 'sarah' ? null : 'sarah');
+              onSelectPerson?.('sarah');
+            }}
+            className="absolute right-9 top-8 flex flex-col items-center cursor-pointer group"
+          >
+            <div className="w-8 h-8 rounded-full border-2 border-amber-500 overflow-hidden shadow-md bg-white">
+              <img src={AVATARS.sarah} alt="Sarah Tan" className="w-full h-full object-cover" />
+            </div>
+            {/* Sarah Tan Tag Badge */}
+            <div className="mt-1 bg-white/95 backdrop-blur-xs text-slate-800 text-[8px] font-bold px-2 py-0.5 rounded-full shadow-sm border border-slate-200/80 flex items-center gap-1 whitespace-nowrap">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>{t.familyActivity.map.schoolZoneStationary}</span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            onClick={() => {
+              setSelectedPin('grandpa');
+              onSelectPerson?.('grandpa');
+            }}
+            className="absolute right-9 top-8 flex flex-col items-center cursor-pointer group"
+          >
+            <div className="w-8 h-8 rounded-full border-2 border-slate-400 overflow-hidden shadow-md bg-white">
+              <img src={AVATARS.grandpa} alt="Grandpa Tan" className="w-full h-full object-cover" />
+            </div>
+            <div className="mt-1 bg-white/95 backdrop-blur-xs text-slate-800 text-[8px] font-bold px-2 py-0.5 rounded-full shadow-sm border border-slate-200/80 flex items-center gap-1 whitespace-nowrap">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              <span>Elmina Community Park • Safe</span>
+            </div>
+          </div>
+        )}
 
-        {/* Sarah Tan Tag Badge */}
-        <div className="absolute right-3 top-[58px] bg-white/95 backdrop-blur-xs text-slate-800 text-[8px] sm:text-[8.5px] font-bold px-2 py-0.5 rounded-full shadow-sm border border-slate-200/80 flex items-center gap-1 whitespace-nowrap">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span>{t.familyActivity.map.schoolZoneStationary}</span>
-        </div>
-
-        {/* Grandpa Tan Marker */}
+        {/* Crosswalk EW-XW02 Marker:
+            Dynamically displays whichever user has the +30s crosswalk priority (Sarah Tan or Grandpa Tan)! */}
         <div
           onClick={() => {
-            setSelectedPin(selectedPin === 'grandpa' ? null : 'grandpa');
-            onSelectPerson?.('grandpa');
+            const person = isSarahOnCrosswalk ? 'sarah' : 'grandpa';
+            setSelectedPin(person);
+            onSelectPerson?.(person);
           }}
           className="absolute left-[242px] top-[74px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer group z-10"
         >
@@ -200,15 +226,21 @@ export const TownshipMap: React.FC<TownshipMapProps> = ({ onSelectPerson }) => {
             <div className="absolute w-10 h-10 rounded-full border-2 border-red-500/80 bg-red-500/10"></div>
             
             <div className="w-7 h-7 rounded-full border-2 border-white overflow-hidden shadow-md bg-white z-10">
-              <img src={AVATARS.grandpa} alt="Grandpa Tan" className="w-full h-full object-cover" />
+              <img
+                src={isSarahOnCrosswalk ? AVATARS.sarah : AVATARS.grandpa}
+                alt={isSarahOnCrosswalk ? 'Sarah Tan' : 'Grandpa Tan'}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
 
-        {/* Grandpa Tan Safe Crossing Badge */}
+        {/* Dynamic Safe Crossing Badge with ONLY +30s */}
         <div className="absolute left-[195px] top-[98px] -translate-x-1/2 bg-white/95 backdrop-blur-xs text-slate-800 text-[8px] sm:text-[8.5px] font-bold px-2 py-0.5 rounded-full shadow-sm border border-slate-200/80 flex items-center gap-1 whitespace-nowrap z-20">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span>{t.familyActivity.map.crosswalkSafeCrossing}</span>
+          <span>
+            {isSarahOnCrosswalk ? 'Sarah Tan' : 'Persiaran Elmina'} Crosswalk • Safe Crossing (+30s)
+          </span>
         </div>
       </div>
     </div>

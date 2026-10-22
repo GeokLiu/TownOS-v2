@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, AlertTriangle, ShieldCheck, Clock, BellRing } from 'lucide-react';
+import { X, CheckCircle2, AlertTriangle, ShieldCheck, Clock, BellRing, BatteryWarning } from 'lucide-react';
 import { NotificationItem } from '../types';
 import { useI18n } from '../i18n/I18nContext';
 
@@ -19,33 +19,40 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
   onNotificationClick,
 }) => {
   const { t, language } = useI18n();
-  const [filter, setFilter] = useState<'all' | 'risks' | 'activity'>('all');
+  const [filter, setFilter] = useState<'all' | 'risks' | 'activity' | 'battery'>('all');
 
   if (!isOpen) return null;
 
   const filteredNotifs = notifications.filter((n) => {
-    if (filter === 'risks') return n.type === 'weather_risk' || n.type === 'sos';
+    if (filter === 'risks') return n.type === 'weather_risk' || n.type === 'sos' || n.type === 'battery_low';
     if (filter === 'activity') return n.type === 'arrival' || n.type === 'crossing';
+    if (filter === 'battery') return n.type === 'battery_low';
     return true;
   });
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  // Localized notification text mapper based on item.id
   const getLocalizedNotification = (item: NotificationItem) => {
     if (language === 'ms') {
+      if (item.id === 'notif-battery') {
+        return {
+          title: 'Amaran Bateri Lemah (18%)',
+          message: 'Bateri tag Sarah Tan menurun ke 18% (bawah had keselamatan 20%). Sila cas atau gantikan bateri untuk mengekalkan keutamaan lintasan jalan & penjejakan.',
+          badge: 'Bateri 18%',
+        };
+      }
       if (item.id === 'notif-1') {
         return {
           title: 'Amaran Cuaca Panas Ekstrem (34°C)',
-          message: 'Indeks haba tinggi di Elmina Barat. Nasihat risiko untuk Datuk Tan (Kencing Manis/Warga Emas): pastikan minum air secukupnya & tangguhkan aktiviti luar.',
+          message: 'Indeks haba tinggi di Elmina Barat. Nasihat risiko untuk warga emas: pastikan minum air secukupnya & tangguhkan aktiviti luar.',
           badge: 'Risiko Cuaca',
         };
       }
       if (item.id === 'notif-2') {
         return {
-          title: 'Lintasan Selamat Direkodkan',
-          message: 'Datuk Tan melintas di Persiaran Elmina (EW-XW02). Radar lintasan memanjangkan lampu hijau pejalan kaki secara automatik sebanyak +15s.',
-          badge: '+15s Lampu Hijau',
+          title: 'Lintasan Selamat Direkodkan (+30s)',
+          message: 'Radar lintasan jalan EW-XW02 memanjangkan lampu hijau pejalan kaki secara automatik sebanyak +30s.',
+          badge: '+30s Lampu Hijau',
         };
       }
       if (item.id === 'notif-3') {
@@ -63,18 +70,25 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
         };
       }
     } else if (language === 'zh') {
+      if (item.id === 'notif-battery') {
+        return {
+          title: '低电量告警 (18%)',
+          message: '陈莎拉的标签电量已降至 18% (低于 20% 安全阈值)。请尽快充电以保持斑马线优先通行与边缘定位。',
+          badge: '电量 18%',
+        };
+      }
       if (item.id === 'notif-1') {
         return {
           title: '极端高温天气预警 (34°C)',
-          message: '艾美娜西区热指数偏高。针对长者陈爷爷 (高血糖/行动缓慢) 的健康提示: 务必多补充水分，并建议推迟午后户外散步。',
+          message: '艾美娜西区热指数偏高。健康提示: 务必多补充水分，并建议推迟午后户外散步。',
           badge: '高温风险',
         };
       }
       if (item.id === 'notif-2') {
         return {
-          title: '记录到安全过街通行',
-          message: '陈爷爷通过艾美娜林荫大道 (EW-XW02) 斑马线。过街雷达已自动为行人延长绿灯时间 +15秒。',
-          badge: '+15秒 绿灯延长',
+          title: '记录到安全过街通行 (+30秒)',
+          message: '斑马线雷达已自动为行人延长绿灯时间 +30秒。',
+          badge: '+30秒 绿灯延长',
         };
       }
       if (item.id === 'notif-3') {
@@ -142,18 +156,26 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-1.5 my-3 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+        <div className="flex items-center gap-1.5 my-3 bg-slate-100 p-1 rounded-xl text-xs font-semibold overflow-x-auto">
           <button
             onClick={() => setFilter('all')}
-            className={`flex-1 py-1 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
               filter === 'all' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             {t.notifications.allTab}
           </button>
           <button
+            onClick={() => setFilter('battery')}
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+              filter === 'battery' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            {t.notifications.batteryTab}
+          </button>
+          <button
             onClick={() => setFilter('risks')}
-            className={`flex-1 py-1 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
               filter === 'risks' ? 'bg-white text-red-600 shadow-xs' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -161,7 +183,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
           </button>
           <button
             onClick={() => setFilter('activity')}
-            className={`flex-1 py-1 rounded-lg transition-all cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
               filter === 'activity' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -178,18 +200,27 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
           ) : (
             filteredNotifs.map((item) => {
               const loc = getLocalizedNotification(item);
+              const isBatteryAlert = item.type === 'battery_low';
+
               return (
                 <div
                   key={item.id}
                   onClick={() => onNotificationClick?.(item)}
                   className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
-                    !item.isRead
+                    isBatteryAlert
+                      ? 'bg-amber-50/70 border-amber-300 shadow-xs'
+                      : !item.isRead
                       ? 'bg-red-50/30 border-red-200/80 shadow-xs'
                       : 'bg-white border-slate-100 hover:border-slate-200'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex items-center gap-1.5">
+                      {item.type === 'battery_low' && (
+                        <span className="p-1 rounded-md bg-amber-200 text-amber-900">
+                          <BatteryWarning className="w-3.5 h-3.5 stroke-[2.5]" />
+                        </span>
+                      )}
                       {item.type === 'weather_risk' && (
                         <span className="p-1 rounded-md bg-amber-100 text-amber-700">
                           <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -211,7 +242,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
                         </span>
                       )}
 
-                      <h4 className="font-bold text-slate-900 text-xs tracking-tight">
+                      <h4 className={`font-bold text-xs tracking-tight ${isBatteryAlert ? 'text-amber-900 font-extrabold' : 'text-slate-900'}`}>
                         {loc.title}
                       </h4>
                     </div>
@@ -229,7 +260,9 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
                     <div className="mt-2 pl-6 flex items-center justify-between">
                       <span
                         className={`text-[9.5px] font-bold px-2 py-0.5 rounded-md ${
-                          item.type === 'weather_risk'
+                          item.type === 'battery_low'
+                            ? 'bg-amber-200 text-amber-900'
+                            : item.type === 'weather_risk'
                             ? 'bg-amber-100 text-amber-800'
                             : item.type === 'crossing'
                             ? 'bg-emerald-100 text-emerald-800'

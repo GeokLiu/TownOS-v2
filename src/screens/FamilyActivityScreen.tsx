@@ -1,9 +1,9 @@
 import React from 'react';
-import { Bell, ShieldAlert, CheckCircle2, Clock } from 'lucide-react';
+import { Bell, ShieldAlert, CheckCircle2, Clock, BatteryWarning } from 'lucide-react';
 import { StatusBar } from '../components/StatusBar';
 import { BottomNavBar } from '../components/BottomNavBar';
 import { TownshipMap } from '../components/TownshipMap';
-import { ActiveTab, HouseholdAccount } from '../types';
+import { ActiveTab, HouseholdAccount, FamilyTag } from '../types';
 import { AVATARS } from '../data/mockData';
 import { useI18n } from '../i18n/I18nContext';
 
@@ -15,6 +15,7 @@ interface FamilyActivityScreenProps {
   onOpenNotifications?: () => void;
   unreadNotificationsCount?: number;
   account: HouseholdAccount;
+  familyTags?: FamilyTag[];
 }
 
 export const FamilyActivityScreen: React.FC<FamilyActivityScreenProps> = ({
@@ -25,8 +26,18 @@ export const FamilyActivityScreen: React.FC<FamilyActivityScreenProps> = ({
   onOpenNotifications,
   unreadNotificationsCount = 3,
   account,
+  familyTags = [],
 }) => {
   const { t } = useI18n();
+
+  // Find who has crosswalk priority (Sarah Tan or Grandpa Tan)
+  const sarahTag = familyTags.find((t) => t.id === 'sarah');
+  const grandpaTag = familyTags.find((t) => t.id === 'grandpa');
+  const isSarahCrosswalkActive = sarahTag?.hasElderlyAssist;
+  const crosswalkUser = isSarahCrosswalkActive ? 'sarah' : 'grandpa';
+
+  // Check if any tag is below 20%
+  const lowBatteryTag = familyTags.find((t) => t.batteryLevel < 20);
 
   return (
     <div className="w-full h-full flex flex-col bg-[#f5f6f8] text-slate-900 select-none overflow-hidden relative">
@@ -75,8 +86,32 @@ export const FamilyActivityScreen: React.FC<FamilyActivityScreenProps> = ({
           </div>
         </div>
 
-        {/* 1. Township Map Card */}
-        <TownshipMap onSelectPerson={onSelectPerson} />
+        {/* Low Battery Warning Notice when tag is < 20% */}
+        {lowBatteryTag && (
+          <div
+            onClick={onOpenNotifications}
+            className="bg-red-50/80 border border-red-200/80 rounded-2xl p-2.5 flex items-center justify-between cursor-pointer hover:bg-red-100/70 transition-colors shadow-2xs"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] font-black flex items-center justify-center shrink-0 leading-none">
+                !
+              </span>
+              <p className="text-[11px] font-semibold text-red-950">
+                {t.familyActivity.batteryAlertBanner(lowBatteryTag.name, lowBatteryTag.batteryLevel)}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1 bg-white border border-red-200 px-2 py-0.5 rounded-full text-[10px] font-extrabold text-red-600 shadow-2xs">
+              <span className="w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px] font-black flex items-center justify-center leading-none">!</span>
+              <span>{lowBatteryTag.batteryLevel}%</span>
+            </span>
+          </div>
+        )}
+
+        {/* 1. Township Map Card with Dynamic Crosswalk User */}
+        <TownshipMap
+          onSelectPerson={onSelectPerson}
+          crosswalkUser={crosswalkUser}
+        />
 
         {/* 2. Family Activity Edge Log Section */}
         <div className="space-y-2.5 pt-1">
@@ -91,24 +126,24 @@ export const FamilyActivityScreen: React.FC<FamilyActivityScreenProps> = ({
 
           {/* Activity Cards List */}
           <div className="space-y-2.5">
-            {/* Activity 1: Grandpa Tan */}
+            {/* Card 1: Safe Crossing recorded for whichever user has crosswalk priority (Sarah Tan or Grandpa Tan) */}
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.025)] border border-slate-100/90 relative">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-100">
                     <img
-                      src={AVATARS.grandpa}
-                      alt="Grandpa Tan"
+                      src={isSarahCrosswalkActive ? AVATARS.sarah : AVATARS.grandpa}
+                      alt={isSarahCrosswalkActive ? 'Sarah Tan' : 'Grandpa Tan'}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-bold text-slate-900 text-sm">
-                      Grandpa Tan
+                      {isSarahCrosswalkActive ? 'Sarah Tan' : 'Grandpa Tan'}
                     </span>
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
                     <span className="text-slate-400 text-xs font-normal">
-                      {t.familyActivity.seniorSlowWalker}
+                      {isSarahCrosswalkActive ? '(Student / Crosswalk Priority)' : t.familyActivity.seniorSlowWalker}
                     </span>
                   </div>
                 </div>
@@ -118,34 +153,34 @@ export const FamilyActivityScreen: React.FC<FamilyActivityScreenProps> = ({
               </div>
 
               <p className="text-[12.5px] text-slate-700 leading-snug font-normal mb-2.5 pl-0.5">
-                {t.familyActivity.safeCrossingLog}
+                {t.familyActivity.safeCrossingLog(isSarahCrosswalkActive ? 'Sarah Tan' : 'Grandpa Tan')}
               </p>
 
-              {/* Tag pill */}
+              {/* Tag pill with ONLY +30s */}
               <div className="inline-flex items-center gap-1.5 bg-[#eaf8f0] text-[#0a824e] text-[11px] font-bold px-2.5 py-1 rounded-lg">
                 <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>{t.familyActivity.greenLightExtended}</span>
+                <span>+30s Green Light Extended</span>
               </div>
             </div>
 
-            {/* Activity 2: Sarah Tan */}
+            {/* Card 2: Sarah Tan Arrival or Grandpa Activity */}
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.025)] border border-slate-100/90 relative">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 border border-slate-100">
                     <img
-                      src={AVATARS.sarah}
-                      alt="Sarah Tan"
+                      src={isSarahCrosswalkActive ? AVATARS.grandpa : AVATARS.sarah}
+                      alt={isSarahCrosswalkActive ? 'Grandpa Tan' : 'Sarah Tan'}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-slate-900 text-sm">
-                      Sarah Tan
+                      {isSarahCrosswalkActive ? 'Grandpa Tan' : 'Sarah Tan'}
                     </span>
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
                     <span className="text-slate-400 text-xs font-normal">
-                      {t.familyActivity.child}
+                      {isSarahCrosswalkActive ? '(Senior / Home)' : t.familyActivity.child}
                     </span>
                   </div>
                 </div>
@@ -155,7 +190,9 @@ export const FamilyActivityScreen: React.FC<FamilyActivityScreenProps> = ({
               </div>
 
               <p className="text-[12.5px] text-slate-700 leading-snug font-normal pl-0.5">
-                {t.familyActivity.schoolArrivalLog}
+                {isSarahCrosswalkActive
+                  ? 'Stationary at Elmina West Community Park (Safe)'
+                  : t.familyActivity.schoolArrivalLog}
               </p>
             </div>
           </div>

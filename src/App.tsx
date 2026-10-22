@@ -11,6 +11,7 @@ import {
   ShieldAlert,
   BellRing,
   CheckCircle,
+  BatteryWarning,
 } from 'lucide-react';
 import { ActiveTab, ViewMode, FamilyTag, EscalationTier, NotificationItem, HouseholdAccount, CoGuardian } from './types';
 import { PhoneFrame } from './components/PhoneFrame';
@@ -96,19 +97,44 @@ function AppContent() {
   };
 
   const handleSaveTagProfile = (updated: FamilyTag) => {
-    setFamilyTags((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    setFamilyTags((prev) =>
+      prev.map((t) => {
+        if (t.id === updated.id) {
+          return updated;
+        }
+        // If this person was granted elderly assist priority, keep or allow others
+        return t;
+      })
+    );
+    setActiveEditingTag(updated);
     showToast(t.toasts.updatedProfile(updated.name));
   };
 
   const handleAiConfirm = () => {
     setIsAiModalOpen(false);
-    showToast(t.toasts.aiLocked);
+    const personName = activeEditingTag?.name || 'Sarah Tan';
+    showToast(t.toasts.aiLocked(personName));
     setActiveTab('family');
   };
 
   const handleMarkAllNotificationsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     showToast(t.toasts.allRead);
+  };
+
+  const handleTriggerLowBatteryAlert = (tagName: string = 'Sarah Tan') => {
+    // Add/Update low battery alert
+    const newNotif: NotificationItem = {
+      id: `notif-battery-${Date.now()}`,
+      type: 'battery_low',
+      title: `Low Battery Alert (18%): ${tagName}`,
+      message: `${tagName}'s smart edge tag has dropped to 18% battery. Alert pushed to household guardians.`,
+      time: 'Just now',
+      isRead: false,
+      badge: 'Battery 18%',
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+    showToast(t.toasts.batteryAlertTriggered(tagName));
   };
 
   const handleUpdateTier = (tierId: string, updated: Partial<EscalationTier>) => {
@@ -221,6 +247,18 @@ function AppContent() {
             )}
           </button>
 
+          {/* Low Battery Alert Button (! 18%) */}
+          <button
+            onClick={() => handleTriggerLowBatteryAlert('Sarah Tan')}
+            className="px-2.5 py-1.5 bg-red-950/70 hover:bg-red-900 border border-red-500/40 text-red-300 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+            title="Sarah Tan Tag Battery: 18% (Click to view alert)"
+          >
+            <span className="w-4 h-4 rounded-full bg-red-600 text-white font-black text-[10px] flex items-center justify-center leading-none shadow-xs">
+              !
+            </span>
+            <span className="font-extrabold text-red-200">18%</span>
+          </button>
+
           {/* Test AI Assessor */}
           <button
             onClick={() => {
@@ -280,14 +318,16 @@ function AppContent() {
               </button>
               <button
                 onClick={() => {
-                  setActiveEditingTag(null);
+                  // Switch to Sarah Tan pairing / editing by default
+                  const sarah = familyTags.find((t) => t.id === 'sarah') || null;
+                  setActiveEditingTag(sarah);
                   setActiveTab('scan');
                 }}
                 className={`px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
                   activeTab === 'scan' ? 'bg-red-500 text-white' : 'hover:text-white'
                 }`}
               >
-                03_Scan_Tag
+                03_Scan_Tag (Sarah Tan)
               </button>
               <button
                 onClick={() => {
@@ -354,13 +394,14 @@ function AppContent() {
                   onTriggerSos={() => setIsSosModalOpen(true)}
                   onSelectPerson={(person) => {
                     showToast(
-                      `Selected ${person === 'grandpa' ? 'Grandpa Tan (+15s Crosswalk Priority)' : 'Sarah Tan (School Safe Zone)'}`
+                      `Selected ${person === 'grandpa' ? 'Grandpa Tan' : 'Sarah Tan'} (+30s Crosswalk Priority)`
                     );
                   }}
                   onOpenProfile={() => setIsProfileOpen(true)}
                   onOpenNotifications={() => setIsNotificationsOpen(true)}
                   unreadNotificationsCount={unreadCount}
                   account={account}
+                  familyTags={familyTags}
                 />
               )}
 
@@ -375,7 +416,7 @@ function AppContent() {
                     setActiveTab('home');
                   }}
                   onOpenAiRiskAssessor={() => setIsAiModalOpen(true)}
-                  targetTag={activeEditingTag}
+                  targetTag={activeEditingTag || familyTags.find((t) => t.id === 'sarah')}
                   onSaveTagProfile={handleSaveTagProfile}
                 />
               )}
@@ -402,7 +443,9 @@ function AppContent() {
                 isOpen={isAiModalOpen}
                 onClose={() => setIsAiModalOpen(false)}
                 onConfirm={handleAiConfirm}
+                personName={activeEditingTag?.name || 'Sarah Tan'}
                 notes={activeEditingTag?.medicalNote}
+                hasElderlyAssist={activeEditingTag?.hasElderlyAssist}
               />
 
               <SosModal
@@ -534,6 +577,7 @@ function AppContent() {
                 onOpenNotifications={() => setIsNotificationsOpen(true)}
                 unreadNotificationsCount={unreadCount}
                 account={account}
+                familyTags={familyTags}
               />
             </PhoneFrame>
           </div>
@@ -549,7 +593,7 @@ function AppContent() {
                   setViewMode('interactive');
                 }}
                 onOpenAiRiskAssessor={() => setIsAiModalOpen(true)}
-                targetTag={familyTags[0]}
+                targetTag={familyTags.find((t) => t.id === 'sarah') || familyTags[0]}
                 onSaveTagProfile={handleSaveTagProfile}
               />
             </PhoneFrame>
@@ -583,12 +627,14 @@ function AppContent() {
                   setViewMode('interactive');
                 }}
                 onOpenAiRiskAssessor={() => {}}
-                targetTag={familyTags[0]}
+                targetTag={familyTags.find((t) => t.id === 'sarah') || familyTags[0]}
               />
               <AiRiskAssessorModal
                 isOpen={true}
                 onClose={() => setViewMode('interactive')}
                 onConfirm={handleAiConfirm}
+                personName={activeEditingTag?.name || 'Sarah Tan'}
+                notes={activeEditingTag?.medicalNote || 'Asthma inhaler in blue backpack pocket. Needs +30s crosswalk priority.'}
               />
             </PhoneFrame>
 
@@ -637,6 +683,7 @@ function AppContent() {
                 onOpenProfile={() => setIsProfileOpen(true)}
                 onOpenNotifications={() => setIsNotificationsOpen(true)}
                 account={account}
+                familyTags={familyTags}
               />
             </PhoneFrame>
 
@@ -650,7 +697,7 @@ function AppContent() {
                 onOpenAiRiskAssessor={() => {
                   setViewMode('board3');
                 }}
-                targetTag={familyTags[0]}
+                targetTag={familyTags.find((t) => t.id === 'sarah') || familyTags[0]}
               />
             </PhoneFrame>
 
@@ -677,7 +724,7 @@ function AppContent() {
               <ScanTagScreen
                 onNavigateTab={() => {}}
                 onOpenAiRiskAssessor={() => {}}
-                targetTag={familyTags[0]}
+                targetTag={familyTags.find((t) => t.id === 'sarah') || familyTags[0]}
               />
               <AiRiskAssessorModal
                 isOpen={true}
@@ -686,6 +733,8 @@ function AppContent() {
                   setViewMode('interactive');
                   setActiveTab('family');
                 }}
+                personName={activeEditingTag?.name || 'Sarah Tan'}
+                hasElderlyAssist={activeEditingTag?.hasElderlyAssist}
               />
             </PhoneFrame>
 

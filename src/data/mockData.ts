@@ -9,9 +9,9 @@ export const AVATARS = {
 };
 
 export const INITIAL_ACCOUNT: HouseholdAccount = {
-  name: 'Michelle Tan',
+  name: 'Michele Tan',
   phone: '+60 12-345 6789',
-  email: 'michelle.tan@elminawest.my',
+  email: 'michele.tan@elminawest.my',
   address: 'No. 28, Jalan Elmina Barat 2/3, Elmina West, 40160 Shah Alam, Selangor',
   avatarUrl: AVATARS.michelle,
 };
@@ -21,37 +21,43 @@ export const INITIAL_TAGS: FamilyTag[] = [
     id: 'grandpa',
     name: 'Grandpa Tan',
     role: '(Senior)',
-    status: 'Paired - Battery-free sticker',
+    status: 'Paired · Smart Edge Tag',
     age: 74,
     avatarUrl: AVATARS.grandpa,
     nfcId: '04:A3:89:FE:12:60:80',
     medicalNote: 'Diabetic / Slow Walker',
     assistType: 'Elderly Assist (Crosswalk Priority)',
     primaryContact: '+60 12-345 6789',
+    batteryLevel: 82,
+    hasElderlyAssist: true,
   },
   {
     id: 'sarah',
     name: 'Sarah Tan',
     role: '(Student)',
-    status: 'Paired - Battery-free sticker',
+    status: 'Paired · Smart Edge Tag',
     age: 10,
     avatarUrl: AVATARS.sarah,
     nfcId: '04:1B:32:89:C4:20:11',
     medicalNote: 'Asthma inhaler in blue backpack pocket',
     assistType: 'School Zone Transit Safe-Pass',
     primaryContact: '+60 12-345 6789',
+    batteryLevel: 18, // < 20% triggers alert!
+    hasElderlyAssist: false,
   },
   {
     id: 'me',
-    name: 'Me',
-    role: '(Runner)',
-    status: 'Paired - Battery-free sticker',
+    name: 'Michele Tan',
+    role: '(Runner / Admin)',
+    status: 'Paired · Smart Edge Tag',
     age: 34,
     avatarUrl: AVATARS.meRunner,
     nfcId: '04:98:AA:77:2F:55:09',
-    medicalNote: 'Allergic to penicillin',
-    assistType: 'Night Runner Illuminated Pathway',
+    medicalNote: 'Active adult runner. Standard crossing cadence.',
+    assistType: 'Standard Transit Pass (No Extension Needed)',
     primaryContact: '+60 16-398 4172',
+    batteryLevel: 94,
+    hasElderlyAssist: false, // Michele Tan does not need extend time!
   },
 ];
 
@@ -61,7 +67,7 @@ export const INITIAL_ESCALATION_TIERS: EscalationTier[] = [
     tier: '1st Tier',
     tierBadgeColor: 'red',
     role: 'Daughter - Primary',
-    contact: 'Michelle Tan · +60 12-••• 8820',
+    contact: 'Michele Tan · +60 12-••• 8820',
     phone: '+60 12-345 6789',
     delaySeconds: 0,
   },
@@ -88,10 +94,20 @@ export const INITIAL_ESCALATION_TIERS: EscalationTier[] = [
 
 export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   {
+    id: 'notif-battery',
+    type: 'battery_low',
+    title: 'Low Battery Alert (18%)',
+    message: "Sarah Tan's tag battery dropped to 18% (below 20% safety threshold). Please charge or replace battery to maintain continuous crosswalk priority & edge tracking.",
+    time: 'Just now',
+    isRead: false,
+    memberId: 'sarah',
+    badge: '! 18%',
+  },
+  {
     id: 'notif-1',
     type: 'weather_risk',
     title: 'Extreme Heat Warning (34°C)',
-    message: 'High heat index in Elmina West. Grandpa Tan (Diabetic/Senior) risk advisory: ensure hydration & postpone afternoon walks.',
+    message: 'High heat index in Elmina West. Senior resident risk advisory: ensure hydration & postpone afternoon walks.',
     time: '11:30 AM',
     isRead: false,
     memberId: 'grandpa',
@@ -100,12 +116,12 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'notif-2',
     type: 'crossing',
-    title: 'Safe Crossing Recorded',
-    message: 'Grandpa Tan crossed Persiaran Elmina (EW-XW02). Crosswalk radar automatically extended pedestrian green light by +15s.',
+    title: 'Safe Crossing Recorded (+30s)',
+    message: 'Crosswalk EW-XW02 radar automatically extended pedestrian green light by +30s for registered assist profile.',
     time: '8:15 AM',
     isRead: false,
     memberId: 'grandpa',
-    badge: '+15s Green Light',
+    badge: '+30s Green Light',
   },
   {
     id: 'notif-3',
@@ -154,8 +170,9 @@ export const ACTIVITY_LOGS: ActivityLog[] = [
     roleBadge: '(Senior / Slow Walker)',
     time: '8:15 AM',
     actionText: 'Safe Crossing recorded at Persiaran Elmina (8:15 AM)',
-    highlightTag: '+15s Green Light Extended',
+    highlightTag: '+30s Green Light Extended',
     avatarUrl: AVATARS.grandpa,
+    tagId: 'grandpa',
   },
   {
     id: 'act-2',
@@ -164,5 +181,6 @@ export const ACTIVITY_LOGS: ActivityLog[] = [
     time: '7:45 AM',
     actionText: 'Arrived at Elmina West Primary Gate (7:45 AM)',
     avatarUrl: AVATARS.sarah,
+    tagId: 'sarah',
   },
 ];

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, ShieldCheck, SlidersHorizontal, ChevronRight, Phone, ArrowRight } from 'lucide-react';
+import { Bell, ShieldCheck, SlidersHorizontal, ChevronRight, Phone, ArrowRight, Battery, BatteryWarning } from 'lucide-react';
 import { StatusBar } from '../components/StatusBar';
 import { BottomNavBar } from '../components/BottomNavBar';
 import { ActiveTab, FamilyTag, EscalationTier, HouseholdAccount } from '../types';
@@ -30,7 +30,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const { t } = useI18n();
 
-  // Helper to translate roles
   const getLocalizedRole = (tagId: string, fallbackRole: string) => {
     if (tagId === 'grandpa') return t.home.roles.senior;
     if (tagId === 'sarah') return t.home.roles.student;
@@ -124,47 +123,80 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
 
           <div className="space-y-2">
-            {familyTags.map((tag) => (
-              <div
-                key={tag.id}
-                className="bg-white rounded-2xl p-3.5 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.025)] border border-slate-100/90 hover:border-slate-200 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-100">
-                    <img
-                      src={tag.avatarUrl}
-                      alt={tag.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold text-slate-900 text-[13.5px]">
-                        {tag.name}
-                      </span>
-                      <span className="text-slate-500 text-[11.5px] font-normal">
-                        {getLocalizedRole(tag.id, tag.role)}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 font-normal mt-0.5">
-                      {t.home.batteryFreeSticker}
-                    </p>
-                  </div>
-                </div>
+            {familyTags.map((tag) => {
+              const isLowBattery = tag.batteryLevel < 20;
 
-                {/* Edit profile Action */}
-                <button
-                  onClick={() => onEditProfile?.(tag)}
-                  className="flex flex-col items-center justify-center text-red-500 hover:text-red-600 transition-colors pl-2 cursor-pointer active:scale-95"
-                  title="Scan physical tag to edit profile"
+              return (
+                <div
+                  key={tag.id}
+                  className={`bg-white rounded-2xl p-3.5 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.025)] border transition-all ${
+                    isLowBattery ? 'border-amber-300 ring-1 ring-amber-300/50' : 'border-slate-100/90 hover:border-slate-200'
+                  }`}
                 >
-                  <SlidersHorizontal className="w-4 h-4 stroke-[2.2]" />
-                  <span className="text-[10px] font-bold mt-0.5 tracking-tight">
-                    {t.home.editProfile}
-                  </span>
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-100 relative">
+                      <img
+                        src={tag.avatarUrl}
+                        alt={tag.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-slate-900 text-[13.5px]">
+                          {tag.name}
+                        </span>
+                        <span className="text-slate-500 text-[11.5px] font-normal">
+                          {getLocalizedRole(tag.id, tag.role)}
+                        </span>
+                        {tag.hasElderlyAssist ? (
+                          <span className="text-[9.5px] bg-red-100 text-red-700 font-bold px-1.5 py-0.2 rounded">
+                            +30s Priority
+                          </span>
+                        ) : (
+                          <span className="text-[9.5px] bg-slate-100 text-slate-600 font-medium px-1.5 py-0.2 rounded">
+                            Standard Pass
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Tag status with battery indicator - Removed battery-free wording */}
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className="text-[11px] text-slate-500 font-normal">
+                          {t.home.smartTagStatus}
+                        </p>
+                        <span className="text-slate-300">·</span>
+                        {isLowBattery ? (
+                          <div className="inline-flex items-center gap-1 bg-red-50 text-red-600 border border-red-200/90 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-2xs">
+                            <span className="w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[9px] font-black flex items-center justify-center leading-none">
+                              !
+                            </span>
+                            <span>{tag.batteryLevel}%</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-[10.5px] font-bold text-slate-500">
+                            <Battery className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>{tag.batteryLevel}%</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Edit profile Action */}
+                  <button
+                    onClick={() => onEditProfile?.(tag)}
+                    className="flex flex-col items-center justify-center text-red-500 hover:text-red-600 transition-colors pl-2 cursor-pointer active:scale-95"
+                    title="Scan physical tag to edit profile"
+                  >
+                    <SlidersHorizontal className="w-4 h-4 stroke-[2.2]" />
+                    <span className="text-[10px] font-bold mt-0.5 tracking-tight">
+                      {t.home.editProfile}
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -184,7 +216,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
           <div className="bg-white rounded-2xl divide-y divide-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100/90 overflow-hidden">
             {escalationTiers.map((tierItem) => {
-              // Localized tier title
               const localizedRole =
                 tierItem.id === 'tier-1'
                   ? t.home.daughterPrimary

@@ -32,6 +32,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [criticalAlerts, setCriticalAlerts] = useState(true);
   const [dailySummaries, setDailySummaries] = useState(true);
   const [weatherWarnings, setWeatherWarnings] = useState(false);
+  const [lowBatteryAlerts, setLowBatteryAlerts] = useState(true); // <20% battery alert toggle
   const [bystanderDataLock, setBystanderDataLock] = useState(true);
 
   const displayAddress = account.address
@@ -133,13 +134,37 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <ChevronRight className="w-4 h-4 text-slate-400 stroke-[2]" />
           </div>
 
-          {/* Push Notifications Card */}
+          {/* Push Notifications Card with Low Battery Alert */}
           <div className="bg-white rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.025)] border border-slate-100/90 space-y-3">
             <span className="block font-bold text-slate-900 text-xs">
               {t.settings.pushNotifications}
             </span>
 
-            {/* Toggle 1: Critical edge alerts */}
+            {/* Toggle 1: Low battery alerts (< 20%) */}
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs text-slate-800 font-semibold block">
+                  {t.settings.lowBatteryAlerts}
+                </span>
+                <span className="text-[10.5px] text-amber-600 font-medium">
+                  Triggers alert when tag battery drops &lt; 20%
+                </span>
+              </div>
+              <button
+                onClick={() => setLowBatteryAlerts(!lowBatteryAlerts)}
+                className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 cursor-pointer ${
+                  lowBatteryAlerts ? 'bg-[#0d945a]' : 'bg-slate-300'
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform ${
+                    lowBatteryAlerts ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Toggle 2: Critical edge alerts */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-700 font-medium">
                 {t.settings.criticalEdgeAlerts}
@@ -158,7 +183,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               </button>
             </div>
 
-            {/* Toggle 2: Daily arrival summaries */}
+            {/* Toggle 3: Daily arrival summaries */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-700 font-medium">
                 {t.settings.dailyArrivalSummaries}
@@ -177,7 +202,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
               </button>
             </div>
 
-            {/* Toggle 3: Extreme weather warnings */}
+            {/* Toggle 4: Extreme weather warnings */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-700 font-medium">
                 {t.settings.extremeWeatherWarnings}

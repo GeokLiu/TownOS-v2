@@ -26,6 +26,8 @@ export interface FamilyTag {
   medicalNote?: string;
   assistType?: string;
   primaryContact?: string;
+  batteryLevel: number; // e.g. 18 (%) triggers < 20% alert
+  hasElderlyAssist?: boolean; // whether this person specifically has crosswalk priority
 }
 
 export interface EscalationTier {
@@ -47,11 +49,12 @@ export interface ActivityLog {
   actionText: string;
   highlightTag?: string;
   avatarUrl: string;
+  tagId?: string;
 }
 
 export interface NotificationItem {
   id: string;
-  type: 'arrival' | 'crossing' | 'weather_risk' | 'sos' | 'edge_status';
+  type: 'arrival' | 'crossing' | 'weather_risk' | 'sos' | 'edge_status' | 'battery_low';
   title: string;
   message: string;
   time: string;

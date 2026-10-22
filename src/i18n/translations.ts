@@ -32,7 +32,8 @@ export interface Translations {
     activeTagsTitle: string;
     pairedBadge: (count: number) => string;
     editProfile: string;
-    batteryFreeSticker: string;
+    smartTagStatus: string;
+    batteryLowBadge: string;
     escalationTitle: string;
     configure: string;
     daughterPrimary: string;
@@ -54,10 +55,12 @@ export interface Translations {
     edgeLogSubtitle: string;
     seniorSlowWalker: string;
     child: string;
-    safeCrossingLog: string;
+    runner: string;
+    safeCrossingLog: (name: string) => string;
     greenLightExtended: string;
     schoolArrivalLog: string;
     emergencySosButton: string;
+    batteryAlertBanner: (name: string, level: number) => string;
     map: {
       communityPark: string;
       riversidePark: string;
@@ -65,7 +68,7 @@ export interface Translations {
       homePerimeter: string;
       schoolSafeZone: string;
       schoolZoneStationary: string;
-      crosswalkSafeCrossing: string;
+      crosswalkSafeCrossing: (name?: string) => string;
     };
   };
   // Scan & Pair Screen
@@ -73,7 +76,6 @@ export interface Translations {
     pairTitle: string;
     editTitle: (name: string) => string;
     subtitle: string;
-    stickerDesc: string;
     tapToScanButton: string;
     scanningText: string;
     scanAnotherTag: string;
@@ -86,6 +88,8 @@ export interface Translations {
     ageLabel: string;
     assistTitle: string;
     assistSubtitle: string;
+    batteryLabel: string;
+    batteryWarningLow: string;
     primaryContactLabel: string;
     medicalNoteLabel: string;
     continueAiCta: string;
@@ -96,7 +100,7 @@ export interface Translations {
     defaultObservation: string;
     autoTunedBadge: string;
     bufferApplied: string;
-    reminder: string;
+    reminder: (name: string) => string;
     confirmButton: string;
   };
   // Bystander Emergency Card
@@ -130,6 +134,7 @@ export interface Translations {
     criticalEdgeAlerts: string;
     dailyArrivalSummaries: string;
     extremeWeatherWarnings: string;
+    lowBatteryAlerts: string;
     securityPrivacySection: string;
     bystanderDataLock: string;
     bystanderDataLockDesc: string;
@@ -150,6 +155,7 @@ export interface Translations {
     allTab: string;
     risksTab: string;
     activityTab: string;
+    batteryTab: string;
     noNotifications: string;
   };
   // Profile Modal
@@ -228,13 +234,14 @@ export interface Translations {
   toasts: {
     holdNfcNear: (name: string) => string;
     updatedProfile: (name: string) => string;
-    aiLocked: string;
+    aiLocked: (name: string) => string;
     allRead: string;
     escalationUpdated: string;
     addressSaved: string;
     addedGuardian: (name: string) => string;
     langSwitched: (lang: string) => string;
     patrolSelected: string;
+    batteryAlertTriggered: (name: string) => string;
   };
 }
 
@@ -268,7 +275,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       activeTagsTitle: 'Active Family Tags',
       pairedBadge: (count) => `${count} paired`,
       editProfile: 'Edit profile',
-      batteryFreeSticker: 'Paired - Battery-free sticker',
+      smartTagStatus: 'Paired · Smart Edge Tag',
+      batteryLowBadge: '! 18%',
       escalationTitle: 'Emergency Escalation Hierarchy',
       configure: 'Configure',
       daughterPrimary: 'Daughter - Primary',
@@ -289,10 +297,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       edgeLogSubtitle: 'Today, Real-time Edge Log',
       seniorSlowWalker: '(Senior / Slow Walker)',
       child: '(Child)',
-      safeCrossingLog: 'Safe Crossing recorded at Persiaran Elmina (8:15 AM)',
-      greenLightExtended: '+15s Green Light Extended',
+      runner: '(Runner)',
+      safeCrossingLog: (name) => `Safe Crossing recorded at Persiaran Elmina for ${name} (8:15 AM)`,
+      greenLightExtended: '+30s Green Light Extended',
       schoolArrivalLog: 'Arrived at Elmina West Primary Gate (7:45 AM)',
       emergencySosButton: 'Emergency SOS',
+      batteryAlertBanner: (name, level) => `Low Battery Alert: ${name}'s tag is at ${level}%. Please recharge.`,
       map: {
         communityPark: 'COMMUNITY PARK',
         riversidePark: 'RIVERSIDE PARK',
@@ -300,26 +310,27 @@ export const TRANSLATIONS: Record<Language, Translations> = {
         homePerimeter: 'Home Perimeter',
         schoolSafeZone: 'Elmina West Primary School Safe Zone',
         schoolZoneStationary: 'Elmina School Zone • Stationary (Safe)',
-        crosswalkSafeCrossing: 'Persiaran Elmina Crosswalk • Safe Crossing (+15s)',
+        crosswalkSafeCrossing: (name = 'Persiaran Elmina') => `${name} Crosswalk • Safe Crossing (+30s)`,
       },
     },
     scan: {
       pairTitle: 'Pair a family tag',
       editTitle: (name) => `Edit ${name}`,
       subtitle: 'One tap. A safer everyday.',
-      stickerDesc: '25mm NFC sticker · No battery. No charging.',
-      tapToScanButton: 'Tap Sticker to Scan',
-      scanningText: 'Scanning NFC Sticker...',
+      tapToScanButton: 'Tap Tag to Scan',
+      scanningText: 'Scanning Smart Tag...',
       scanAnotherTag: 'Scan another tag',
       tagDetected: 'Tag Detected:',
       tagPromptLocked: 'Tap physical tag to verify ownership & unlock editing',
-      tagPromptNew: 'Scan NFC tag first to register details',
+      tagPromptNew: 'Scan tag first to register details',
       tagOwnerDetails: 'Tag owner details',
       unlocked: 'Unlocked',
       nameLabel: 'Name',
       ageLabel: 'Age:',
       assistTitle: 'Elderly Assist (Crosswalk Priority)',
-      assistSubtitle: 'Extra crossing time, automatically.',
+      assistSubtitle: 'Extra crossing time, automatically (+30s).',
+      batteryLabel: 'Tag Battery:',
+      batteryWarningLow: 'Warning: Battery < 20%! Alert triggered.',
       primaryContactLabel: 'Primary contact:',
       medicalNoteLabel: 'Medical note:',
       continueAiCta: 'Continue to AI behavioral & risk profile',
@@ -329,7 +340,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       defaultObservation: 'Diabetic / Slow Walker. Gets disoriented in afternoon heat.',
       autoTunedBadge: 'Auto-tuned township parameter:',
       bufferApplied: '+30s Crosswalk Extension Buffer Applied',
-      reminder: "Reminder: Attach this sticker to Grandpa's daily glasses or walking cane so it leaves the house with him.",
+      reminder: (name) => `Reminder: Keep this tag with ${name}'s daily essentials so it leaves the house with them.`,
       confirmButton: 'Confirm Safety Profile & Lock',
     },
     bystander: {
@@ -361,6 +372,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       criticalEdgeAlerts: 'Critical edge alerts',
       dailyArrivalSummaries: 'Daily arrival summaries',
       extremeWeatherWarnings: 'Extreme weather warnings',
+      lowBatteryAlerts: 'Low battery alerts (< 20%)',
       securityPrivacySection: 'Security & Privacy',
       bystanderDataLock: 'Bystander Rescue Data Lock',
       bystanderDataLockDesc: 'Masks sensitive medical notes behind passcode/PIN',
@@ -378,8 +390,9 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       unreadCountText: (count) => (count > 0 ? `${count} unread alert${count > 1 ? 's' : ''}` : 'All caught up'),
       markAllRead: 'Mark all read',
       allTab: 'All',
-      risksTab: '⚠️ Risk Alerts',
+      risksTab: '⚠️ Risks & Battery',
       activityTab: 'Arrivals & Crossing',
+      batteryTab: '🔋 Battery Alert',
       noNotifications: 'No notifications in this category.',
     },
     profile: {
@@ -418,7 +431,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     coguardians: {
       title: 'Permissions & Co-Guardians',
       subtitle: 'Household tag pairing & medical data access',
-      writeAccessLabel: 'NFC Tag Write Access:',
+      writeAccessLabel: 'Tag Write Access:',
       allowed: 'Allowed',
       readOnly: 'Read Only',
       addNewButton: 'Add Another Co-Guardian',
@@ -445,19 +458,20 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       callerLocation: 'Caller Location:',
       subject: 'Subject:',
       priority: 'Priority:',
-      priorityVal: 'High (Diabetic Alert)',
+      priorityVal: 'High (Assist Alert)',
       endCallButton: 'End Call',
     },
     toasts: {
-      holdNfcNear: (name) => `Hold ${name}'s NFC sticker near device to unlock editing.`,
+      holdNfcNear: (name) => `Hold ${name}'s tag near device to unlock editing.`,
       updatedProfile: (name) => `Updated safety profile for ${name}`,
-      aiLocked: 'TownOS Safety Profile & Crosswalk Buffer (+30s) Locked to Tag!',
+      aiLocked: (name) => `TownOS Safety Profile & +30s Crosswalk Buffer Locked to ${name}'s Tag!`,
       allRead: 'All edge notifications marked as read.',
       escalationUpdated: 'Escalation tier preferences updated.',
       addressSaved: 'Household address updated and geofenced!',
       addedGuardian: (name) => `Added ${name} as co-guardian`,
       langSwitched: (lang) => `Language switched to ${lang}`,
       patrolSelected: 'Selected',
+      batteryAlertTriggered: (name) => `⚠️ Battery alert: ${name}'s tag is below 20%!`,
     },
   },
   ms: {
@@ -489,7 +503,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       activeTagsTitle: 'Tag Keluarga Aktif',
       pairedBadge: (count) => `${count} dipadankan`,
       editProfile: 'Sunting profil',
-      batteryFreeSticker: 'Dipadankan - Pelekat tanpa bateri',
+      smartTagStatus: 'Dipadankan · Tag Pintar Pinggir',
+      batteryLowBadge: '! 18%',
       escalationTitle: 'Hierarki Eskalasi Kecemasan',
       configure: 'Konfigurasi',
       daughterPrimary: 'Anak Perempuan - Utama',
@@ -510,10 +525,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       edgeLogSubtitle: 'Hari Ini, Log Pinggir Masa Nyata',
       seniorSlowWalker: '(Warga Emas / Berjalan Perlahan)',
       child: '(Kanak-kanak)',
-      safeCrossingLog: 'Lintasan Selamat direkodkan di Persiaran Elmina (8:15 PG)',
-      greenLightExtended: '+15s Lampu Hijau Dilanjutkan',
+      runner: '(Pelari)',
+      safeCrossingLog: (name) => `Lintasan Selamat direkodkan di Persiaran Elmina untuk ${name} (8:15 PG)`,
+      greenLightExtended: '+30s Lampu Hijau Dilanjutkan',
       schoolArrivalLog: 'Tiba di Pintu Sekolah Rendah Elmina Barat (7:45 PG)',
       emergencySosButton: 'Kecemasan SOS',
+      batteryAlertBanner: (name, level) => `Amaran Bateri Lemah: Tag ${name} pada tahap ${level}%. Sila cas semula.`,
       map: {
         communityPark: 'TAMAN KOMUNITI',
         riversidePark: 'TAMAN TEPI SUNGAI',
@@ -521,26 +538,27 @@ export const TRANSLATIONS: Record<Language, Translations> = {
         homePerimeter: 'Perimeter Rumah',
         schoolSafeZone: 'Zon Selamat SK Elmina Barat',
         schoolZoneStationary: 'Zon Sekolah Elmina • Pegun (Selamat)',
-        crosswalkSafeCrossing: 'Lintasan Persiaran Elmina • Melintas Selamat (+15s)',
+        crosswalkSafeCrossing: (name = 'Persiaran Elmina') => `Lintasan ${name} • Melintas Selamat (+30s)`,
       },
     },
     scan: {
       pairTitle: 'Padankan tag keluarga',
       editTitle: (name) => `Sunting ${name}`,
       subtitle: 'Satu sentuhan. Setiap hari lebih selamat.',
-      stickerDesc: 'Pelekat NFC 25mm · Tiada bateri. Tanpa caj.',
-      tapToScanButton: 'Sentuh Pelekat untuk Mengimbas',
-      scanningText: 'Mengimbas Pelekat NFC...',
+      tapToScanButton: 'Sentuh Tag untuk Mengimbas',
+      scanningText: 'Mengimbas Tag Pintar...',
       scanAnotherTag: 'Imbas tag lain',
       tagDetected: 'Tag Dikesan:',
       tagPromptLocked: 'Sentuh tag fizikal untuk sahkan pemilikan & buka suntingan',
-      tagPromptNew: 'Imbas tag NFC dahulu untuk mendaftar butiran',
+      tagPromptNew: 'Imbas tag dahulu untuk mendaftar butiran',
       tagOwnerDetails: 'Butiran pemilik tag',
       unlocked: 'Dibuka',
       nameLabel: 'Nama',
       ageLabel: 'Umur:',
       assistTitle: 'Bantuan Warga Emas (Keutamaan Melintas)',
-      assistSubtitle: 'Masa melintas tambahan, secara automatik.',
+      assistSubtitle: 'Masa melintas tambahan, secara automatik (+30s).',
+      batteryLabel: 'Bateri Tag:',
+      batteryWarningLow: 'Amaran: Bateri < 20%! Makluman dicetuskan.',
       primaryContactLabel: 'Nombor hubungan utama:',
       medicalNoteLabel: 'Nota perubatan:',
       continueAiCta: 'Teruskan ke profil tingkah laku & risiko AI',
@@ -550,7 +568,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       defaultObservation: 'Kencing Manis / Berjalan Perlahan. Cenderung keliru dalam cuaca panas petang.',
       autoTunedBadge: 'Parameter perbandaran talaan automatik:',
       bufferApplied: 'Buffer Lanjutan Lintasan +30s Dikenakan',
-      reminder: 'Peringatan: Pasangkan pelekat ini pada cermin mata atau tongkat harian Datuk supaya sentiasa dibawa.',
+      reminder: (name) => `Peringatan: Pastikan tag ini dibawa bersama barangan harian ${name}.`,
       confirmButton: 'Sahkan Profil Keselamatan & Kunci',
     },
     bystander: {
@@ -582,6 +600,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       criticalEdgeAlerts: 'Makluman pinggir kritikal',
       dailyArrivalSummaries: 'Ringkasan ketibaan harian',
       extremeWeatherWarnings: 'Amaran cuaca ekstrem',
+      lowBatteryAlerts: 'Makluman bateri lemah (< 20%)',
       securityPrivacySection: 'Keselamatan & Privasi',
       bystanderDataLock: 'Kunci Data Penyelamat Awam',
       bystanderDataLockDesc: 'Sembunyikan nota perubatan sensitif di sebalik kod PIN',
@@ -599,8 +618,9 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       unreadCountText: (count) => (count > 0 ? `${count} amaran belum dibaca` : 'Tiada pemberitahuan baharu'),
       markAllRead: 'Tanda semua dibaca',
       allTab: 'Semua',
-      risksTab: '⚠️ Amaran Risiko',
+      risksTab: '⚠️ Risiko & Bateri',
       activityTab: 'Ketibaan & Lintasan',
+      batteryTab: '🔋 Bateri Lemah',
       noNotifications: 'Tiada pemberitahuan dalam kategori ini.',
     },
     profile: {
@@ -639,7 +659,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     coguardians: {
       title: 'Kebenaran & Penjaga Bersama',
       subtitle: 'Padanan tag kediaman & akses data perubatan',
-      writeAccessLabel: 'Akses Tulis Tag NFC:',
+      writeAccessLabel: 'Akses Tulis Tag:',
       allowed: 'Dibenarkan',
       readOnly: 'Baca Sahaja',
       addNewButton: 'Tambah Penjaga Bersama Lain',
@@ -666,19 +686,20 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       callerLocation: 'Lokasi Pemanggil:',
       subject: 'Subjek:',
       priority: 'Keutamaan:',
-      priorityVal: 'Tinggi (Amaran Kencing Manis)',
+      priorityVal: 'Tinggi (Amaran Bantuan)',
       endCallButton: 'Tamatkan Panggilan',
     },
     toasts: {
-      holdNfcNear: (name) => `Dekatkan pelekat NFC ${name} ke telefon untuk menyunting.`,
+      holdNfcNear: (name) => `Dekatkan tag ${name} ke telefon untuk menyunting.`,
       updatedProfile: (name) => `Profil keselamatan ${name} dikemas kini`,
-      aiLocked: 'Profil Keselamatan & Buffer Lintasan (+30s) Dikunci ke Tag!',
+      aiLocked: (name) => `Profil Keselamatan & Buffer Lintasan (+30s) Dikunci ke Tag ${name}!`,
       allRead: 'Semua pemberitahuan ditandakan sebagai dibaca.',
       escalationUpdated: 'Keutamaan peringkat eskalasi dikemas kini.',
       addressSaved: 'Alamat kediaman dikemas kini dan dipagar geofens!',
       addedGuardian: (name) => `${name} ditambah sebagai penjaga bersama`,
       langSwitched: (lang) => `Bahasa ditukar kepada ${lang}`,
       patrolSelected: 'Dipilih',
+      batteryAlertTriggered: (name) => `⚠️ Amaran bateri: Bateri tag ${name} bawah 20%!`,
     },
   },
   zh: {
@@ -710,7 +731,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       activeTagsTitle: '已激活家庭标签',
       pairedBadge: (count) => `${count} 个已配对`,
       editProfile: '编辑资料',
-      batteryFreeSticker: '已配对 - 免电池贴纸',
+      smartTagStatus: '已配对 · 智能边缘标签',
+      batteryLowBadge: '! 18%',
       escalationTitle: '紧急升级联络层级',
       configure: '配置',
       daughterPrimary: '女儿 - 主要联络人',
@@ -731,10 +753,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       edgeLogSubtitle: '今日边缘实时日志',
       seniorSlowWalker: '(长者 / 行动缓慢)',
       child: '(儿童)',
-      safeCrossingLog: '在艾美娜林荫大道记录到安全通行 (上午 8:15)',
-      greenLightExtended: '+15秒 延长绿灯时间',
+      runner: '(跑步者)',
+      safeCrossingLog: (name) => `在艾美娜林荫大道记录到 ${name} 安全通行 (上午 8:15)`,
+      greenLightExtended: '+30秒 延长绿灯时间',
       schoolArrivalLog: '已到达艾美娜西区小学大门 (上午 7:45)',
       emergencySosButton: '紧急 SOS 救援',
+      batteryAlertBanner: (name, level) => `低电量告警: ${name} 的标签电量仅剩 ${level}%，请及时充电。`,
       map: {
         communityPark: '社区公园',
         riversidePark: '滨河公园',
@@ -742,26 +766,27 @@ export const TRANSLATIONS: Record<Language, Translations> = {
         homePerimeter: '家庭安全周界',
         schoolSafeZone: '艾美娜西区小学安全区',
         schoolZoneStationary: '艾美娜学校区域 • 静止 (安全)',
-        crosswalkSafeCrossing: '艾美娜林荫大道斑马线 • 安全过街 (+15秒)',
+        crosswalkSafeCrossing: (name = '艾美娜林荫大道') => `${name} 斑马线 • 安全过街 (+30秒)`,
       },
     },
     scan: {
       pairTitle: '配对家庭标签',
       editTitle: (name) => `编辑 ${name}`,
       subtitle: '轻碰一下，日常更安全。',
-      stickerDesc: '25毫米 NFC 贴纸 · 无需电池 · 无需充电',
-      tapToScanButton: '轻碰贴纸进行扫描',
-      scanningText: '正在扫描 NFC 贴纸...',
+      tapToScanButton: '轻碰标签进行扫描',
+      scanningText: '正在扫描智能标签...',
       scanAnotherTag: '扫描其他标签',
       tagDetected: '已检测到标签:',
       tagPromptLocked: '请轻碰实体标签以验证所有权并解锁编辑',
-      tagPromptNew: '请先扫描 NFC 标签以登记信息',
+      tagPromptNew: '请先扫描标签以登记信息',
       tagOwnerDetails: '标签所有者信息',
       unlocked: '已解锁',
       nameLabel: '姓名',
       ageLabel: '年龄:',
       assistTitle: '长者协助 (斑马线优先通行)',
-      assistSubtitle: '系统将自动分配额外的过街通行时间。',
+      assistSubtitle: '系统将自动分配额外的过街通行时间 (+30秒)。',
+      batteryLabel: '标签电量:',
+      batteryWarningLow: '预警: 标签电量低于 20%! 已触发提醒。',
       primaryContactLabel: '紧急主联系人:',
       medicalNoteLabel: '医疗健康备注:',
       continueAiCta: '继续至 AI 行为与风险评估',
@@ -771,7 +796,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       defaultObservation: '糖尿病 / 行动迟缓。在午后高温下容易迷失方向。',
       autoTunedBadge: '自动调节镇区参数:',
       bufferApplied: '已应用 +30秒 斑马线延长缓冲',
-      reminder: '提醒: 请将此贴纸贴在爷爷的日常眼镜或拐杖上，确保随身携带。',
+      reminder: (name) => `提醒: 请将此标签与 ${name} 的日常随身物品绑定，确保随身携带。`,
       confirmButton: '确认安全档案并锁定',
     },
     bystander: {
@@ -803,6 +828,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       criticalEdgeAlerts: '关键边缘警报',
       dailyArrivalSummaries: '每日到达行程摘要',
       extremeWeatherWarnings: '极端高温天气预警',
+      lowBatteryAlerts: '低电量预警 (< 20%)',
       securityPrivacySection: '安全与隐私',
       bystanderDataLock: '旁观者救援数据锁定',
       bystanderDataLockDesc: '在密码/PIN码后加密遮蔽敏感病史',
@@ -820,8 +846,9 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       unreadCountText: (count) => (count > 0 ? `${count} 条未读警报` : '全部已阅'),
       markAllRead: '全部标为已读',
       allTab: '全部',
-      risksTab: '⚠️ 风险警报',
+      risksTab: '⚠️ 风险与电量',
       activityTab: '到达与过街',
+      batteryTab: '🔋 低电量告警',
       noNotifications: '该分类下暂无通知。',
     },
     profile: {
@@ -860,7 +887,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     coguardians: {
       title: '权限与共同监护人',
       subtitle: '家庭标签配对与医疗数据管理权限',
-      writeAccessLabel: 'NFC 标签写入权限:',
+      writeAccessLabel: '标签写入权限:',
       allowed: '允许',
       readOnly: '只读',
       addNewButton: '添加其他共同监护人',
@@ -887,19 +914,20 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       callerLocation: '呼叫者位置:',
       subject: '求助对象:',
       priority: '优先级:',
-      priorityVal: '高危 (糖尿病患者警报)',
+      priorityVal: '高危 (协助警报)',
       endCallButton: '结束通话',
     },
     toasts: {
-      holdNfcNear: (name) => `请将 ${name} 的 NFC 贴纸靠近手机以解锁编辑。`,
+      holdNfcNear: (name) => `请将 ${name} 的标签靠近手机以解锁编辑。`,
       updatedProfile: (name) => `已更新 ${name} 的安全档案`,
-      aiLocked: 'TownOS 安全档案与斑马线缓冲 (+30秒) 已成功写入并锁定！',
+      aiLocked: (name) => `TownOS 安全档案与 +30秒 斑马线缓冲已成功写入并锁定至 ${name} 的标签！`,
       allRead: '所有通知已标记为已读。',
       escalationUpdated: '升级联络层级配置已更新。',
       addressSaved: '家庭地址已更新并纳入电子安全网格！',
       addedGuardian: (name) => `已将 ${name} 添加为共同监护人`,
       langSwitched: (lang) => `已切换语言为 ${lang}`,
       patrolSelected: '已选定',
+      batteryAlertTriggered: (name) => `⚠️ 电量预警: ${name} 的标签电量低于 20%!`,
     },
   },
 };
